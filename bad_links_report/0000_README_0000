@@ -1,0 +1,11 @@
+This directory contains programs and process the site sucker log file
+to produce the bad links report.
+
+The program files are:
+
+bad_links_report.sh .......... Master shell script.  Execute this to produce the report
+extract_errors_from_log.rb ... Extracts ERROR: messages from the site sucker log file
+invert_log_file.rb ........... Extracts the URIs from the processed error log file
+
+The result of executing the shell script is a text file.
+
