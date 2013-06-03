@@ -1,0 +1,8 @@
+uri: http://<%= ENV['XDBMS_HOST'] || 'localhost'}:#{ENV['XDBMS_PORT'] || '8010' %>/dynamic_dispatch.xqy
+user_name: <%= ENV['XDBM_USER'] || 'testuser' %>
+password:  <%= ENV['XDBM_PASS'] || 'password' %>
+
+logger:
+  file: ActiveDocument.log
+  level: debug
+  rotation: daily
