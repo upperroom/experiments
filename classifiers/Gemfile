@@ -1,0 +1,23 @@
+source 'https://rubygems.org'
+
+gem 'awesome_print'
+gem 'systemu'
+
+gem 'bayesball'         # this is nice
+gem 'stuff-classifier'  # bayes and tf-idf weights; this is also nice
+
+
+gem 'judgee'        # simple classifier using bayes technique and redis
+gem 'reclassifier'  # another simple classifier that has several methods
+
+
+
+
+
+# Clustering algorithms
+
+gem 'kmeans-clustering'
+gem 'rbcluster'
+gem 'hierclust'
+gem 'fastcluster'   # based upon hierclust w/o the hier
+
