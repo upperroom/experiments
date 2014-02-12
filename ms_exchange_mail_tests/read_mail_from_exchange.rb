@@ -12,6 +12,7 @@ def show(label, thing = :xyzzy, show_methods=false)
   puts
   pp(thing) unless :xyzzy == thing
   pp(thing.methods.sort) if show_methods
+  puts
 end
 
 
@@ -62,7 +63,9 @@ show 'inbox.items.size', inbox.items.size
 
 a_message = inbox.items.first
 
-# show 'a_message', a_message, true
+show 'a_message', a_message, true
+
+__END__
 
 
 show 'a_message.is_read?',          a_message.is_read?

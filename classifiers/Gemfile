@@ -1,7 +1,8 @@
-source 'https://rubygems.org'
+source :rubygems
 
 gem 'awesome_print'
 gem 'systemu'
+gem 'docx'              # Access contents of MS Word document
 
 gem 'bayesball'         # this is nice
 gem 'stuff-classifier'  # bayes and tf-idf weights; this is also nice
