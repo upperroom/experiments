@@ -1,0 +1,5 @@
+source :rubygems
+
+ge, "spreadsheet"
+gem "xls"         # uses spreadsheet; xls is poorly documented
+gem "writeexcel"
