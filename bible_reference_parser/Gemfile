@@ -1,0 +1,5 @@
+source 'https://rubygems.org'
+
+gem 'bible' # CLI bible reader MUST USE ruby 1.8.7
+
+gem 'bible_reference_parser'
