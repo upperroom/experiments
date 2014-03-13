@@ -1,0 +1,23 @@
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: upperroom_development
+  pool: 5
+  username: dvanhoozer
+  password:
+
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: upperroom_test
+  pool: 5
+  username: dvanhoozer
+  password:
+
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: upperroom_production
+  pool: 5
+  username: dvanhoozer
+  password:
