@@ -11,20 +11,26 @@ require 'debug_me'
 
 require 'pathname'
 
-require 'rest-client'
+require_relative 'ww-rest-elvis'
 
 me        = Pathname.new(__FILE__).realpath
 my_dir    = me.parent
 my_name   = me.basename.to_s
 
 $options = {
-  verbose:        false,
+  verbose:        true,
+  debug:          true,
   out_filename:   nil
 }
 
 def verbose?
   $options[:verbose]
 end
+
+def debug?
+  $options[:debug]
+end
+
 
 
 usage = <<EOS
@@ -38,9 +44,7 @@ Where:
   options               Do This
     -h or --help        Display this message
     -v or --verbose     Display progress
-    -o or --output      Specifies the path to the output
-        out_filename      file.  The extname must be 'ics'
-                          Defaults to STDOUT
+    -d or --debug       Issue some special output
 
   parameters            The parameters required by
                         the program
@@ -116,6 +120,13 @@ end
   end
 end
 
+%w[ -d --debug ].each do |param|
+  if ARGV.include? param
+    $options[:debug]          = true
+    ARGV[ ARGV.index(param) ] = nil
+  end
+end
+
 %w[ -o --output ].each do |param|
   get_out_filename( ARGV.index(param) ) if ARGV.include?(param)
   unless $options[:out_filename].nil?
@@ -132,10 +143,19 @@ ARGV.compact!
 
 abort_if_errors
 
+$elvis = WW::REST::Elvis.new
 
 ######################################################
 # Local methods
 
+def test_it( command_name, options, e=$elvis )
+  puts "="*45
+  puts "Command: #{command_name}"
+  o = options.merge( WW::REST::Elvis::Utilities.encode_login('upperroom','please') )
+  r = e.send(command_name, o)
+  puts "Response:"
+  pp r
+end
 
 ######################################################
 # Main
@@ -146,24 +166,54 @@ at_exit do
   puts
 end
 
-pp $options
 
-stub = <<EOS
+test_it :browse, { path: '/Users/upperroom'}
+test_it :browse, { path: '/Users/upperroom/Auto organized'}
+test_it :browse, { path: '/Users/upperroom/Auto organized/2014'}
+test_it :browse, { path: '/Users/upperroom/Auto organized/2014/2014-06-19'}
 
+test_it :search, {q: 'prayer'}
 
-   d888888o. 8888888 8888888888 8 8888      88 8 888888888o
- .`8888:' `88.     8 8888       8 8888      88 8 8888    `88.
- 8.`8888.   Y8     8 8888       8 8888      88 8 8888     `88
- `8.`8888.         8 8888       8 8888      88 8 8888     ,88
-  `8.`8888.        8 8888       8 8888      88 8 8888.   ,88'
-   `8.`8888.       8 8888       8 8888      88 8 8888888888
-    `8.`8888.      8 8888       8 8888      88 8 8888    `88.
-8b   `8.`8888.     8 8888       ` 8888     ,8P 8 8888      88
-`8b.  ;8.`8888     8 8888         8888   ,d8P  8 8888    ,88'
- `Y8888P ,88P'     8 8888          `Y88888P'   8 888888888P
+# test_it :create_folder, {path: 'test'}  # access denied
+# test_it :create_folder, {path: '/test'} # access denied
+test_it :create_folder, { path: '/Users/upperroom/test' }
 
+test_it :profile, {}
 
-EOS
+f = File.new('silly.txt', 'rb')
 
-puts stub
+# test_it :create, {  # RestClient does not like my parameters on post actions
+#   Filedata:     f,
+#   folderPath:   '/Users/upperroom/test',
+#   name:         'silly.txt'
+# }
+
+test_it :move, {
+  source: '/Users/upperroom/test',
+  target: '/Users/upperroom/old_test'
+}
+
+test_it :browse, { path: '/Users/upperroom'}
+
+test_it :remove, { folderPath: '/Users/upperroom/test' }
+
+test_it :browse, { path: '/Users/upperroom'}
+
+test_it :rename, {
+  source: '/Users/upperroom/old_test',
+  target: '/Users/upperroom/test'
+}
+
+test_it :browse, { path: '/Users/upperroom'}
+
+test_it :copy, {
+  source: '/Users/upperroom/test',
+  target: '/Users/upperroom/copy_of_test'
+}
+
+test_it :browse, { path: '/Users/upperroom'}
+
+test_it :remove_folder, { folderPath: '/Users/upperroom/test' }
+test_it :remove_folder, { folderPath: '/Users/upperroom/copy_of_test' }
+
 

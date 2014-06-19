@@ -4,11 +4,16 @@
 ##  Desc: The REST interface for Elvis
 #
 
+require "url_safe_base64"
+
+require 'rest_client'
+require 'multi_json'
+
 module WoodWing
   module REST
     class Elvis
 
-      attr_accessor base_url
+      attr_accessor :base_url
 
       class Utilities
         class << self
@@ -24,15 +29,25 @@ module WoodWing
               else
                 a_string += '&'
               end
-              a_string += "#{k}=#{v}"
+              a_string += "#{k}=#{String == v.class ? v.gsub(' ','%20') : v}"
             end # options.each_pair
+            debug_me{:a_string} if debug?
+            return a_string
           end # url_encode_options
+
+          def encode_login(username='guest', password='guest')
+            {
+              authcred:     UrlSafeBase64.encode64("#{username}:#{password}"),
+              authpersist:  'true',
+              authclient:   'api_ruby'
+            }
+          end
 
         end # eigenclass
       end # Utilities
 
-      def initialize(my_base_url="http://elvis.upperroom.org/services/")
-        base_url = my_base_url
+      def initialize(my_base_url="http://54.86.167.23:8080/services/")
+        @base_url = my_base_url
       end
 
       # https://elvis.tenderapp.com/kb/api/rest-browse
@@ -83,9 +98,11 @@ module WoodWing
       #                       assets: .collection, .dossier, .task
 
       def browse(options={})
-        raise "missing path option" unless options.include?(:path)
+        raise "missing 'path' option" unless options.include?(:path)
         url = base_url + "browse"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # browse
 
 
@@ -93,13 +110,19 @@ module WoodWing
       def checkout(options={})
         url = base_url + "checkout"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # checkout
 
 
       # https://elvis.tenderapp.com/kb/api/rest-copy
       def copy(options={})
+        raise "missing 'source' option" unless options.include?(:source)
+        raise "missing 'target' option" unless options.include?(:target)
         url = base_url + "copy"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # copy
 
 
@@ -107,13 +130,18 @@ module WoodWing
       def create(options={})
         url = base_url + "create"
         url += Utilities.url_encode_options(options)
+        response = RestClient.post url
+        MultiJson.load(response, :symbolize_keys => true)
       end # create
 
 
       # https://elvis.tenderapp.com/kb/api/rest-create_folder
       def create_folder(options={})
-        url = base_url + "create_folder"
+        raise "missing 'path' option" unless options.include?(:path)
+        url = base_url + "createFolder"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # create_folder
 
 
@@ -121,6 +149,8 @@ module WoodWing
       def create_relation(options={})
         url = base_url + "create_relation"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # create_relation
 
 
@@ -128,6 +158,8 @@ module WoodWing
       def create_auth_key(options={})
         url = base_url + "create_auth_key"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # create_auth_key
 
 
@@ -135,6 +167,8 @@ module WoodWing
       def localization(options={})
         url = base_url + "localization"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # localization
 
 
@@ -142,6 +176,8 @@ module WoodWing
       def log_usage_stats(options={})
         url = base_url + "log_usage_stats"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # log_usage_stats
 
 
@@ -149,6 +185,8 @@ module WoodWing
       def login(options={})
         url = base_url + "login"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # login
 
 
@@ -156,27 +194,38 @@ module WoodWing
       def logout(options={})
         url = base_url + "logout"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # logout
 
 
       # https://elvis.tenderapp.com/kb/api/rest-move
       def move(options={})
+        raise "missing 'source' option" unless options.include?(:source)
+        raise "missing 'target' option" unless options.include?(:target)
         url = base_url + "move"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # move
 
+      alias :rename :move
 
       # https://elvis.tenderapp.com/kb/api/rest-profile
       def profile(options={})
         url = base_url + "profile"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # profile
 
 
       # https://elvis.tenderapp.com/kb/api/rest-query_stats
       def query_stats(options={})
-        url = base_url + "query_stats"
+        url = base_url + "queryStats"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # query_stats
 
 
@@ -184,34 +233,46 @@ module WoodWing
       def remove(options={})
         url = base_url + "remove"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # remove
+
+
+      # https://elvis.tenderapp.com/kb/api/rest-remove
+      def remove_folder(options={})
+        raise "missing 'folderPath' option" unless options.include?(:folderPath)
+        url = base_url + "remove"
+        url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
+      end # remove_folder
 
 
       # https://elvis.tenderapp.com/kb/api/rest-remove_relation
       def remove_relation(options={})
         url = base_url + "remove_relation"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # remove_relation
-
-
-      # https://elvis.tenderapp.com/kb/api/rest-rename
-      def rename(options={})
-        url = base_url + "rename"
-        url += Utilities.url_encode_options(options)
-      end # rename
 
 
       # https://elvis.tenderapp.com/kb/api/rest-revoke_auth_keys
       def revoke_auth_keys(options={})
         url = base_url + "revoke_auth_keys"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # revoke_auth_keys
 
 
       # https://elvis.tenderapp.com/kb/api/rest-search
       def search(options={})
+        raise "missing 'q' option" unless options.include?(:q)
         url = base_url + "search"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # search
 
 
@@ -219,6 +280,8 @@ module WoodWing
       def undo_checkout(options={})
         url = base_url + "undo_checkout"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # undo_checkout
 
 
@@ -226,6 +289,8 @@ module WoodWing
       def update(options={})
         url = base_url + "update"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # update
 
 
@@ -233,6 +298,8 @@ module WoodWing
       def update_auth_key(options={})
         url = base_url + "update_auth_key"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # update_auth_key
 
 
@@ -240,6 +307,8 @@ module WoodWing
       def update_bulk(options={})
         url = base_url + "update_bulk"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # update_bulk
 
 
@@ -247,6 +316,8 @@ module WoodWing
       def zip_download(options={})
         url = base_url + "zip_download"
         url += Utilities.url_encode_options(options)
+        response = RestClient.get url
+        MultiJson.load(response, :symbolize_keys => true)
       end # zip_download
 
     end # Elvis
