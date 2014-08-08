@@ -34,8 +34,6 @@ def debug?
   $options[:debug]
 end
 
-$DEBUG = debug?
-
 usage = <<EOS
 
 Does something with the Elvis REST API
@@ -161,6 +159,8 @@ abort_if_errors
 
 # pp $options
 
+$DEBUG = debug?
+
 $elvis = WW::REST::Elvis.new
 
 ######################################################
@@ -237,9 +237,9 @@ end
 =end
 
 
-=begin
-r = test_it :search, {  q: 'status:rexeived~',
-                        metadataToReturn: 'assetCreated,assetModified,fileSize,title,created,assetPath,creatorName',
+
+r = test_it :search, {  q: 'cf_PrayerFocus:*doc*',
+                        metadataToReturn: 'cf_TFTD,cf_PrayerFocus',
                         appendRequestSecret: 'true'
 }
 
@@ -260,7 +260,7 @@ if Hash == r.class
     r[:hits].first[:metadata].keys.select{|k| :textContent != k }.each {|k| puts "#{k}: #{r[:hits].first[:metadata][k]}"}
   end
 end
-=end
+
 
 #################################################################
 ## Testing the sequence for adding a file from a web form
@@ -283,6 +283,7 @@ pp r
 
 puts "="*45
 
+=begin
 
 file_contents = <<EOS
 <?xml version="1.0" encoding="UTF-8"?>
@@ -314,16 +315,16 @@ temp_file.close
 r = test_it :create,
                 {
                   Filedata:   File.open("/tmp/#{filename}", 'rb'),
-                  assetPath:  '/test/billy.xml',
+                  assetPath:  '/test/hill_billy.xml',
                   status:'Needs Conversion',
-                  PrayerFocus:'Medical people like doctors and nurses'
+                  cf_PrayerFocus:'uneducated voters in Tennessee'
                 }
 
 
 
 pp r
 
-
+=end
 
 
 __END__

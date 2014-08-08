@@ -100,11 +100,11 @@ module WoodWing
       end
 
       def get_response(url=nil,options={})
-        # url += Utilities.url_encode_options(options) unless options.empty?
+        url += Utilities.url_encode_options(options) unless options.empty?
 
 debug_me{[:url, :options ]} if $DEBUG
 
-        response = RestClient.get(url, options)
+        response = RestClient.get(url)     # , options)
         if String == response.class
           response = MultiJson.load(  response,
                                       :symbolize_keys => true)
@@ -563,7 +563,7 @@ end # WoodWing
 
 WW = WoodWing
 
-
+__END__
 ##################################################
 ## Testing Related Stuff
 
