@@ -15,21 +15,78 @@ module WoodWing
 
       attr_accessor :base_url
 
+      # SMELL: Why is this error any more special than the others?
       class ConcurrentModificationException < StandardError; end
+
+      COMMANDS = {
+        # method name       URL Resource        Required Parameters
+        browse:             ["browse",          [:path]],
+        checkout:           ["checkout",        []],
+        copy:               ["copy",            [:source, :target]],
+        create:             ["create",          [:assetPath, :Filedata]],
+        create:             ["create",          []],
+        create_auth_key:    ["create_auth_key", []],
+        create_collection:  ["create",          [:assetPath]],
+        create_relation:    ["create_relation", []],
+        create_folder:      ["createFolder",    [:path]],
+        localization:       ["localization",    []],
+        log_usage_stats:    ["log_usage_stats", []],
+        login:              ["login",           []],
+        logout:             ["logout",          []],
+        move:               ["move",            [:source, :target]],
+        profile:            ["profile",         []],
+        query_stats:        ["queryStats",      []],
+        remove:             ["remove",          []],
+        remove_folder:      ["remove",          [:folderPath]],
+        remove_relation:    ["remove_relation", []],
+        revoke_auth_keys:   ["revoke_auth_keys",[]],
+        search:             ["search",          [:q]],
+        undo_checkout:      ["undo_checkout",   []],
+        update:             ["update",          []],
+        update_auth_key:    ["update_auth_key", []],
+        update_bulk:        ["update_bulk",     []],
+        zip_download:       ["zip_download",    []]
+      }
 
       class Utilities
 
-        PERMISSIONS = {
-          'V' => 'VIEW',
-          'P' => 'VIEW_PREVIEW',
-          'U' => 'USE_ORIGINAL',
-          'M' => 'EDIT_METADATA',
-          'E' => 'EDIT',
-          'R' => 'RENAME',
-          'X' => 'MOVE',
-          'C' => 'CREATE',
-          'D' => 'DELETE',
-        }
+        # Utility class to check permissions 'mask' for available permissions.
+        # The permissions mask consists of a string with one character for
+        # every permission available in Elvis: VPUMERXCD
+
+        class Pmask
+          PERMISSIONS = {
+            'V' => 'VIEW',
+            'P' => 'VIEW_PREVIEW',
+            'U' => 'USE_ORIGINAL',
+            'M' => 'EDIT_METADATA',
+            'E' => 'EDIT',
+            'R' => 'RENAME',
+            'X' => 'MOVE',
+            'C' => 'CREATE',
+            'D' => 'DELETE',
+          }
+
+          def initialize(pmask='')
+            @pmask = pmask
+          end
+
+          def verbose
+            v=[]
+            @pmask.each_char{|c| v<<PERMISSIONS[c]}
+            return v.join(', ')
+          end
+
+          define_method('can_view?')          { @pmask.include? 'V' }
+          define_method('can_view_preview?')  { @pmask.include? 'P' }
+          define_method('can_use_original?')  { @pmask.include? 'U' }
+          define_method('can_edit_metadata?') { @pmask.include? 'M' }
+          define_method('can_edit?')          { @pmask.include? 'E' }
+          define_method('can_rename?')        { @pmask.include? 'R' }
+          define_method('can_move?')          { @pmask.include? 'X' }
+          define_method('can_create?')        { @pmask.include? 'C' }
+          define_method('can_delete?')        { @pmask.include? 'D' }
+        end # class Pmask
 
 
         class << self
@@ -67,9 +124,11 @@ module WoodWing
 
           # raise ArgumentError if required options are not present
 
-          def demand_required_options!(options, required_options=[])
+          def demand_required_options!(command, options)
+            raise ArgumentError unless Symbol == command.class
             raise ArgumentError unless Hash == options.class
-            raise ArgumentError unless Array == required_options.class
+            raise ArgumentError unless WW::REST::Elvis::COMMANDS.include?(command)
+            required_options = WW::REST::Elvis::COMMANDS[command][1]
             answer = true
             return(answer) if required_options.empty?
             required_options.each do |ro|
@@ -78,26 +137,14 @@ module WoodWing
             raise "ArgumentError: #{caller.first.split().last} requires #{required_options.join(', ')}" unless answer
           end
 
-
-          # Utility to check permissions 'mask' for available permissions.
-          # The permissions mask consists of a string with one character for
-          # every permission available in Elvis: VPUMERXCD
-
-          def verbose_permissions(perm_mask='')
-            vp = []
-            perm_mask.each do |c|
-              vp << PERMISSIONS[c] if PERMISSIONS.include? c
-            end
-            return vp
-          end
-
-
         end # eigenclass
-      end # Utilities
+      end # class Utilities
+
 
       def initialize(my_base_url=ENV['ELVIS_API_URL'])
         @base_url = my_base_url
       end
+
 
       def get_response(url=nil,options={})
         url += Utilities.url_encode_options(options) unless options.empty?
@@ -150,7 +197,6 @@ debug_me{[:url, :options ]} if $DEBUG
       end
 
 
-
       # https://elvis.tenderapp.com/kb/api/rest-browse
       #
       # browse folders and show their subfolders and collections,
@@ -199,7 +245,7 @@ debug_me{[:url, :options ]} if $DEBUG
       #                       assets: .collection, .dossier, .task
 
       def browse(options={})
-        Utilities.demand_required_options!( options, [:path] )
+        Utilities.demand_required_options!( :browse, options )
         url = base_url + "browse"
         response = get_response(url, options)
       end # browse
@@ -214,7 +260,7 @@ debug_me{[:url, :options ]} if $DEBUG
 
       # https://elvis.tenderapp.com/kb/api/rest-copy
       def copy(options={})
-        Utilities.demand_required_options!( options, [:source, :target] )
+        Utilities.demand_required_options!( :copy, options )
         url = base_url + "copy"
         response = get_response(url, options)
       end # copy
@@ -263,22 +309,24 @@ debug_me{[:url, :options ]} if $DEBUG
       #             Optional. If omitted, a simple 200 OK status code will be returned
 
       def create(options={})
-        Utilities.demand_required_options!( options, [:assetPath, :Filedata] )
+        Utilities.demand_required_options!( :create, options )
         options.merge!( { multipart: true } )
         url = base_url + "create"
         response = get_response_using_post(url, options)
       end # create
 
-
-      def raw_create(url='http://elvis.upperroom.org/services/create', payload={})
-        response = RestClient.post(url, payload)
-      end
+      alias :create_file :create
+      alias :upload_file :create
+      alias :import_file :create
+      alias :create_asset :create
+      alias :upload_asset :create
+      alias :import_asset :create
 
 
       # No file is uploaded.  A placehold asset is created with the
       # associated metadata
       def create_collection(options={})
-        Utilities.demand_required_options!( options, [:assetPath] )
+        Utilities.demand_required_options!( :create_collection, options )
         url = base_url + "create"
         options.merge!( {assetType: 'collection'} )
         response = get_response(url, options)
@@ -287,7 +335,7 @@ debug_me{[:url, :options ]} if $DEBUG
 
       # https://elvis.tenderapp.com/kb/api/rest-create_folder
       def create_folder(options={})
-        Utilities.demand_required_options!( options, [:path] )
+        Utilities.demand_required_options!( :create_folder, options )
         url = base_url + "createFolder"
         response = get_response(url, options)
       end # create_folder
@@ -337,12 +385,13 @@ debug_me{[:url, :options ]} if $DEBUG
 
       # https://elvis.tenderapp.com/kb/api/rest-move
       def move(options={})
-        Utilities.demand_required_options!( options, [:source, :target] )
+        Utilities.demand_required_options!( :move, options )
         url = base_url + "move"
         response = get_response(url, options)
       end # move
 
       alias :rename :move
+
 
       # https://elvis.tenderapp.com/kb/api/rest-profile
       def profile(options={})
@@ -364,13 +413,17 @@ debug_me{[:url, :options ]} if $DEBUG
         response = get_response(url, options)
       end # remove
 
+      alias :delete :remove
+
 
       # https://elvis.tenderapp.com/kb/api/rest-remove
       def remove_folder(options={})
-        Utilities.demand_required_options!( options, [:folderPath] )
+        Utilities.demand_required_options!( :remove_folder, options )
         url = base_url + "remove"
         response = get_response(url, options)
       end # remove_folder
+
+      alias :delete_folder :remove_folder
 
 
       # https://elvis.tenderapp.com/kb/api/rest-remove_relation
@@ -378,6 +431,8 @@ debug_me{[:url, :options ]} if $DEBUG
         url = base_url + "remove_relation"
         response = get_response(url, options)
       end # remove_relation
+
+      alias :delete_relation :remove_relation
 
 
       # https://elvis.tenderapp.com/kb/api/rest-revoke_auth_keys
@@ -417,7 +472,7 @@ debug_me{[:url, :options ]} if $DEBUG
       #               prefix terms with + to require - to remove
       #               suffix terms with ~ to include similar (eg. spelling errors)
       #               terms seperated by spaces default to an AND condition
-      #               use "double quotes" or search for phrases.
+      #               use "double quotes" to search for phrases.
       #               All searches are case insensitive.
       #
       #   start   First hit to be returned. Starting at 0 for the first hit. Used
@@ -517,10 +572,12 @@ debug_me{[:url, :options ]} if $DEBUG
       # both the actual numerical value and a formatted value.
 
       def search(options={})
-        Utilities.demand_required_options!( options, [:q] )
+        Utilities.demand_required_options!( :search, options )
         url = base_url + "search"
         response = get_response(url, options)
       end # search
+
+      alias :find :search
 
 
       # https://elvis.tenderapp.com/kb/api/rest-undo_checkout
@@ -529,12 +586,16 @@ debug_me{[:url, :options ]} if $DEBUG
         response = get_response(url, options)
       end # undo_checkout
 
+      alias :abort_checkout :undo_checkout
+
 
       # https://elvis.tenderapp.com/kb/api/rest-update
       def update(options={})
         url = base_url + "update"
         response = get_response(url, options)
       end # update
+
+      alias :replace :update
 
 
       # https://elvis.tenderapp.com/kb/api/rest-update_auth_key
@@ -543,12 +604,17 @@ debug_me{[:url, :options ]} if $DEBUG
         response = get_response(url, options)
       end # update_auth_key
 
+      alias :replace_auth_key :update_auth_key
+
 
       # https://elvis.tenderapp.com/kb/api/rest-update_bulk
       def update_bulk(options={})
         url = base_url + "update_bulk"
         response = get_response(url, options)
       end # update_bulk
+
+      alias :replace_bulk :update_bulk
+      alias :bulk_update :update_bulk
 
 
       # https://elvis.tenderapp.com/kb/api/rest-zip_download
@@ -557,11 +623,14 @@ debug_me{[:url, :options ]} if $DEBUG
         response = get_response(url, options)
       end # zip_download
 
+      alias :download_zip :zip_download
+
     end # Elvis
   end # REST
 end # WoodWing
 
-WW = WoodWing
+WW      = WoodWing
+WwRest  = WoodWing::REST
 
 __END__
 ##################################################

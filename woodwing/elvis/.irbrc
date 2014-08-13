@@ -3,7 +3,7 @@ require './ww-rest-elvis.rb'
 $options = {
   verbose:        true,
   debug:          false,
-  elvis_api_url:  ENV['ELVIS_API_URL']  || 'http://elvis.upperroom.org:8080/services/'
+  elvis_api_url:  ENV['ELVIS_API_URL']  || 'http://elvis.upperroom.org:8080/services/',
   elvis_user:     ENV['ELVIS_USER']     || 'guest',
   elvis_pass:     ENV['ELVIS_PASS']     || 'guest',
   out_filename:   nil
