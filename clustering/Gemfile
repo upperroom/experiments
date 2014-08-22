@@ -1,0 +1,28 @@
+source 'https://rubygems.org'
+
+# Java has some goodies such as Carrot2
+
+# not available via rubygems
+
+gem 'string_clusterer', :git => 'https://github.com/munshkr/string_clusterer.git', :branch => 'master'
+gem 'scluster', :git => 'https://github.com/laurita/scluster.git', :branch => 'master'
+
+gem 'levenshtein' # required by scluster
+
+gem 'clusterer'   # A library of clustering and classification algorithms for text data.
+
+
+# These five have no text examples
+gem 'fastcluster'       # A clustering library for 2 dimensional points
+gem 'hierclust'         # performs hierarchical clustering on geometric points
+gem 'Empact-hierclust'  # fork of hierclust that is two years newer
+gem 'kmeans-clustering'   # A simple Ruby gem for parallelized k-means clustering.
+gem 'rbcluster'           # Ruby bindings for the Cluster C library
+
+
+gem 'irbtools'
+gem 'irbtools-more'
+gem 'sketches'
+gem 'zucker'
+
+
