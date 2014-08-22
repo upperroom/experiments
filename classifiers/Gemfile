@@ -7,16 +7,23 @@ gem 'docx'              # Access contents of MS Word document
 gem 'bayesball'         # this is nice
 gem 'stuff-classifier'  # bayes and tf-idf weights; this is also nice
 
+gem 'classifier'          # general classifier module - Bayesian and other types
+gem 'classifier-reborn'   # general classifier module - Bayesian and other types
+
+# Access to the GSL speeds up LSI by 20x used by classifier and classifier-reborn
+
+gem 'rb-gsl'              # GNU Scientific Library
+# brew install gsl
+
+gem 'ankusa'  # supports several different storage methods
 
 gem 'judgee'        # simple classifier using bayes technique and redis
 gem 'reclassifier'  # another simple classifier that has several methods
 
 
-
-
-
 # Clustering algorithms
 
+gem 'clusterer'           # old
 gem 'kmeans-clustering'
 gem 'rbcluster'
 gem 'hierclust'
