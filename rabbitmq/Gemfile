@@ -1,0 +1,9 @@
+source 'https://rubygems.org'
+
+gem 'bunny'
+gem 'hashie'
+
+# development stuff
+gem 'betterlorem'
+gem 'awesome_print'
+

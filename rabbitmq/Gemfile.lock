@@ -1,0 +1,18 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    amq-protocol (1.9.2)
+    awesome_print (1.2.0)
+    betterlorem (0.1.2)
+    bunny (1.4.0)
+      amq-protocol (>= 1.9.2)
+    hashie (3.3.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  awesome_print
+  betterlorem
+  bunny
+  hashie
