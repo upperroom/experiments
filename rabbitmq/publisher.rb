@@ -102,6 +102,7 @@ end # def create_author
 
 100.times do
   author = create_author().tap(&:publish)
+  puts "#{author.author_id}\t#{author.name}"
   100.times do
     create_meditation(author.author_id).publish
   end
