@@ -157,6 +157,14 @@ def story_title(a_story)
   a_story.attributes['StoryTitle'].value.split('/').last
 end
 
+def text_of(a_story)
+  a_story.xpath('.//Content').to_s.
+    gsub('</Content>',"\n").
+    gsub('<Content>','').
+    gsub('<Content/>','').
+    chomp.strip
+end
+
 
 ######################################################
 # Main
@@ -177,16 +185,13 @@ $options[:wcml_files].each do |fp|
   # pp contents
 
   stories   = wcml_doc.xpath("//Story")
-  contents  = wcml_doc.xpath("//Content")
-
-  debug_me{[ 'stories.size', 'contents.size']}
 
   story_index = 0
   stories.each do |a_story|
     puts "="*45
-    puts story_title(a_story) + ": #{story_index}"
-    puts contents[story_index]
-    story_index += 1
+    puts story_title(a_story)
+    puts text_of(a_story)
+
   end
 
 end
