@@ -14,6 +14,9 @@ require 'pathname'
 
 require 'nokogiri'
 
+require 'wcml_helpers'
+include WcmlHelpers
+
 me        = Pathname.new(__FILE__).realpath
 my_dir    = me.parent
 my_name   = me.basename.to_s
@@ -153,7 +156,7 @@ abort_if_errors
 ######################################################
 # Local methods
 
-def story_title(a_story)
+def story_title_of(a_story)
   a_story.attributes['StoryTitle'].value.split('/').last
 end
 
@@ -179,18 +182,19 @@ pp $options
 
 
 $options[:wcml_files].each do |fp|
-  wcml_doc  = Nokogiri::XML(fp.read)
-  # pp wcml_doc
-  # contents = wcml_doc.xpath("//Content") # simular to Docx.paragraphs.text
-  # pp contents
 
-  stories   = wcml_doc.xpath("//Story")
+  wcml_doc  = open_wcml(fp)
 
-  story_index = 0
+  stories   = get_stories(wcml_doc)
+
   stories.each do |a_story|
-    puts "="*45
-    puts story_title(a_story)
-    puts text_of(a_story)
+
+    story_title = get_story_title(a_story)
+    text        = get_text(a_story)
+
+    puts "\n" + ("="*45)
+    puts story_title
+    puts text
 
   end
 
